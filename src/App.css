@@ -1,57 +1,69 @@
-/* iOS Style Theme for PhotoMasterPro */
+/* PhotoMasterPro - iOS Style Theme */
 
-:root {
-  --adm-color-primary: #007AFF;
-  --adm-color-success: #34C759;
-  --adm-color-warning: #FF9500;
-  --adm-color-danger: #FF3B30;
-  --adm-color-white: #FFFFFF;
-  --adm-color-black: #000000;
-  --adm-color-text: #000000;
-  --adm-color-text-secondary: #8E8E93;
-  --adm-color-weak: #C7C7CC;
-  --adm-color-light: #F2F2F7;
-  --adm-color-border: #E5E5EA;
-  --adm-color-background: #F2F2F7;
-  --adm-color-box: #FFFFFF;
-  
-  /* iOS Dark Mode Colors */
-  --ios-bg-primary: #000000;
-  --ios-bg-secondary: #1C1C1E;
-  --ios-bg-tertiary: #2C2C2E;
-  --ios-bg-elevated: #3A3A3C;
-  --ios-label-primary: #FFFFFF;
-  --ios-label-secondary: #8E8E93;
-  --ios-label-tertiary: #48484A;
-  --ios-accent-blue: #0A84FF;
-  --ios-accent-green: #30D158;
-  --ios-accent-orange: #FF9F0A;
-  --ios-accent-red: #FF453A;
-  --ios-accent-purple: #BF5AF2;
-  --ios-accent-pink: #FF375F;
-  --ios-separator: #38383A;
-  --ios-overlay: rgba(0, 0, 0, 0.7);
-  
-  /* iOS Blur */
-  --ios-blur-light: rgba(255, 255, 255, 0.7);
-  --ios-blur-dark: rgba(30, 30, 30, 0.7);
+/* ========== 核心布局样式 ========== */
+.app-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  overflow: hidden;
 }
 
-/* Global Styles */
+.app-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  min-height: 0;
+  /* 给 Tab Bar 留出空间，防止内容被遮挡 */
+  padding-bottom: 55px;
+}
+
+.page-wrapper {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 100;
+}
+
+/* Tab Bar */
+.tab-bar-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 0.5px solid #38383A;
+  z-index: 10;
+}
+
+/* ========== 基础重置 ========== */
 * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
 }
 
 html, body {
-  margin: 0;
-  padding: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: var(--ios-bg-primary);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  background: #000;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  color: #fff;
 }
 
 #root {
@@ -59,112 +71,110 @@ html, body {
   height: 100%;
 }
 
-/* App Container */
-.app-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: var(--ios-bg-primary);
-  color: var(--ios-label-primary);
-}
-
-.app-content {
-  flex: 1;
-  position: relative;
+/* ========== Tailwind 兼容工具类 ========== */
+.bg-dark { background-color: #000000; }
+.bg-darkCard { background-color: #1C1C1E; }
+.text-accent { color: #0A84FF; }
+.bg-accent { background-color: #0A84FF; }
+.border-accent { border-color: #0A84FF; }
+.active\:scale-98:active { transform: scale(0.98); }
+.active\:scale-95:active { transform: scale(0.95); }
+.active\:scale-90:active { transform: scale(0.9); }
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.page-wrapper {
-  position: absolute;
-  inset: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
+/* ========== 动画 ========== */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+.fade-in { animation: fadeIn 0.15s ease-out; }
+.slide-up { animation: slideUp 0.2s ease-out; }
+.scale-in { animation: scaleIn 0.15s ease-out; }
+
+/* ========== Ant Design Mobile 主题变量 ========== */
+:root {
+  --adm-color-primary: #0A84FF;
+  --adm-color-success: #30D158;
+  --adm-color-warning: #FF9F0A;
+  --adm-color-danger: #FF3B30;
+  --adm-color-text: #FFFFFF;
+  --adm-color-text-secondary: #8E8E93;
+  --adm-color-background: #000000;
+  --adm-color-box: #1C1C1E;
 }
 
-.page-wrapper.overlay {
-  z-index: 100;
-  background: var(--ios-bg-primary);
-}
-
-/* Tab Bar */
-.tab-bar-wrapper {
-  flex-shrink: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-top: 0.5px solid var(--ios-separator);
-}
-
+/* Tab Bar 内部样式 */
 .tab-bar-wrapper .adm-tab-bar {
   background: transparent;
 }
-
 .tab-bar-wrapper .adm-tab-bar-item {
-  color: var(--ios-label-secondary);
+  color: #8E8E93;
 }
-
 .tab-bar-wrapper .adm-tab-bar-item-active {
-  color: var(--ios-accent-blue);
+  color: #0A84FF;
 }
 
-.tab-bar-wrapper .adm-tab-bar-item-icon {
-  font-size: 24px;
+/* iOS Segmented Control */
+.ios-segmented {
+  display: flex;
+  border-radius: 8px;
+  background: #2C2C2E;
+  padding: 3px;
 }
-
-.tab-bar-wrapper .adm-tab-bar-item-title {
-  font-size: 10px;
+.ios-segmented-item {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: #8E8E93;
+  font-size: 13px;
   font-weight: 500;
-  margin-top: 2px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.ios-segmented-item-active {
+  background: #3A3A3C;
+  color: #fff;
 }
 
 /* iOS Cards */
 .ios-card {
-  background: var(--ios-bg-secondary);
+  background: #1C1C1E;
   border-radius: 12px;
+  margin: 0 16px 12px;
   overflow: hidden;
-  margin-bottom: 12px;
 }
-
 .ios-card-header {
-  padding: 16px;
-  border-bottom: 0.5px solid var(--ios-separator);
-}
-
-.ios-card-content {
-  padding: 16px;
-}
-
-.ios-card-footer {
-  padding: 12px 16px;
-  border-top: 0.5px solid var(--ios-separator);
+  padding: 14px 16px;
+  border-bottom: 0.5px solid #38383A;
+  font-weight: 600;
 }
 
 /* iOS List */
 .ios-list {
-  background: var(--ios-bg-secondary);
+  background: #1C1C1E;
   border-radius: 12px;
+  margin: 0 16px 12px;
   overflow: hidden;
 }
-
 .ios-list-item {
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 0.5px solid var(--ios-separator);
-  background: transparent;
-  transition: background 0.2s;
+  border-bottom: 0.5px solid #38383A;
+  transition: background 0.1s;
 }
-
-.ios-list-item:last-child {
-  border-bottom: none;
-}
-
-.ios-list-item:active {
-  background: var(--ios-bg-tertiary);
-}
-
+.ios-list-item:last-child { border-bottom: none; }
+.ios-list-item:active { background: #2C2C2E; }
 .ios-list-icon {
   width: 32px;
   height: 32px;
@@ -175,31 +185,13 @@ html, body {
   margin-right: 12px;
   font-size: 18px;
 }
-
-.ios-list-content {
-  flex: 1;
-}
-
-.ios-list-title {
-  font-size: 16px;
-  color: var(--ios-label-primary);
-  font-weight: 400;
-}
-
-.ios-list-subtitle {
-  font-size: 13px;
-  color: var(--ios-label-secondary);
-  margin-top: 2px;
-}
-
-.ios-list-arrow {
-  color: var(--ios-label-tertiary);
-  font-size: 14px;
-}
+.ios-list-content { flex: 1; }
+.ios-list-title { font-size: 16px; color: #fff; }
+.ios-list-subtitle { font-size: 13px; color: #8E8E93; margin-top: 2px; }
 
 /* iOS Buttons */
 .ios-button {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   padding: 12px 24px;
@@ -208,65 +200,10 @@ html, body {
   font-weight: 500;
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
 }
-
-.ios-button-primary {
-  background: var(--ios-accent-blue);
-  color: white;
-}
-
-.ios-button-primary:active {
-  background: #0066CC;
-  transform: scale(0.98);
-}
-
-.ios-button-secondary {
-  background: var(--ios-bg-tertiary);
-  color: var(--ios-accent-blue);
-}
-
-.ios-button-secondary:active {
-  background: var(--ios-bg-elevated);
-}
-
-.ios-button-ghost {
-  background: transparent;
-  color: var(--ios-accent-blue);
-  border: 1px solid var(--ios-separator);
-}
-
-.ios-button-large {
-  width: 100%;
-}
-
-/* iOS Segmented Control */
-.ios-segmented {
-  display: flex;
-  background: var(--ios-bg-tertiary);
-  border-radius: 8px;
-  padding: 2px;
-}
-
-.ios-segmented-item {
-  flex: 1;
-  padding: 8px 12px;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ios-label-secondary);
-  border-radius: 6px;
-  transition: all 0.2s;
-  cursor: pointer;
-  border: none;
-  background: transparent;
-}
-
-.ios-segmented-item-active {
-  background: var(--ios-bg-elevated);
-  color: var(--ios-label-primary);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
+.ios-button-primary { background: #0A84FF; color: white; }
+.ios-button-primary:active { background: #0066CC; }
+.ios-button-secondary { background: #2C2C2E; color: #0A84FF; }
 
 /* iOS Tags */
 .ios-tag {
@@ -277,358 +214,25 @@ html, body {
   font-size: 12px;
   font-weight: 500;
 }
-
-.ios-tag-blue {
-  background: rgba(10, 132, 255, 0.15);
-  color: var(--ios-accent-blue);
-}
-
-.ios-tag-green {
-  background: rgba(48, 209, 88, 0.15);
-  color: var(--ios-accent-green);
-}
-
-.ios-tag-orange {
-  background: rgba(255, 159, 10, 0.15);
-  color: var(--ios-accent-orange);
-}
-
-.ios-tag-red {
-  background: rgba(255, 69, 58, 0.15);
-  color: var(--ios-accent-red);
-}
-
-/* Camera Page Styles */
-.camera-page {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: #000;
-}
-
-.camera-viewfinder {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-}
-
-.camera-preview {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 网格线 */
-.camera-grid {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.grid-line-v {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.grid-line-h {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* 对焦框 */
-.focus-frame {
-  position: absolute;
-  width: 80px;
-  height: 80px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-}
-
-.focus-corner {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  border-color: #FFD700;
-  border-style: solid;
-}
-
-.focus-corner.tl {
-  top: -1px;
-  left: -1px;
-  border-width: 2px 0 0 2px;
-}
-
-.focus-corner.tr {
-  top: -1px;
-  right: -1px;
-  border-width: 2px 2px 0 0;
-}
-
-.focus-corner.bl {
-  bottom: -1px;
-  left: -1px;
-  border-width: 0 0 2px 2px;
-}
-
-.focus-corner.br {
-  bottom: -1px;
-  right: -1px;
-  border-width: 0 2px 2px 0;
-}
-
-/* 模式提示 */
-.mode-hint {
-  position: absolute;
-  top: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-}
-
-/* 变焦指示器 */
-.zoom-indicator {
-  position: absolute;
-  top: 50%;
-  right: 16px;
-  transform: translateY(-50%);
-}
-
-.zoom-indicator input[type="range"] {
-  -webkit-appearance: none;
-  width: 80px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
-  outline: none;
-}
-
-.zoom-indicator input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  background: white;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-/* 拍照闪光 */
-.capture-flash {
-  position: absolute;
-  inset: 0;
-  background: white;
-  z-index: 10;
-}
-
-/* 底部控制区 */
-.camera-controls {
-  background: #000;
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.mode-selector {
-  padding: 8px 0;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.mode-chip {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 14px;
-  border-radius: 20px;
-  background: rgba(60, 60, 60, 0.6);
-  color: white;
-  font-size: 13px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.mode-chip.active {
-  background: var(--ios-accent-blue);
-}
-
-.shutter-area {
-  padding: 16px 0;
-}
-
-.shutter-button {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: transparent;
-  border: 4px solid white;
-  cursor: pointer;
-  transition: all 0.15s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.shutter-inner {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: white;
-  transition: all 0.15s;
-}
-
-.shutter-button:active .shutter-inner {
-  transform: scale(0.9);
-}
-
-.quick-params {
-  padding: 8px 16px 16px;
-  text-align: center;
-}
-
-/* Mode Cards Grid */
-.mode-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  padding: 12px 16px;
-}
-
-.mode-card {
-  background: var(--ios-bg-secondary);
-  border-radius: 16px;
-  padding: 16px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: left;
-}
-
-.mode-card:active {
-  transform: scale(0.96);
-  background: var(--ios-bg-tertiary);
-}
-
-.mode-card-icon {
-  font-size: 36px;
-  margin-bottom: 12px;
-}
-
-.mode-card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ios-label-primary);
-  margin-bottom: 4px;
-}
-
-.mode-card-subtitle {
-  font-size: 12px;
-  color: var(--ios-label-secondary);
-  margin-bottom: 8px;
-}
-
-.mode-card-desc {
-  font-size: 13px;
-  color: var(--ios-label-secondary);
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+.ios-tag-blue { background: rgba(10, 132, 255, 0.15); color: #0A84FF; }
+.ios-tag-green { background: rgba(48, 209, 88, 0.15); color: #30D158; }
 
 /* Parameter Cards */
 .param-card {
-  background: var(--ios-bg-secondary);
+  background: #1C1C1E;
   border-radius: 12px;
-  padding: 16px;
   margin: 8px 16px;
 }
-
 .param-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 0.5px solid var(--ios-separator);
+  padding: 12px 16px;
+  border-bottom: 0.5px solid #38383A;
 }
+.param-row:last-child { border-bottom: none; }
+.param-label { color: #8E8E93; font-size: 15px; }
+.param-value { font-size: 17px; font-weight: 600; color: #fff; }
 
-.param-row:last-child {
-  border-bottom: none;
-}
-
-.param-value {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--ios-label-primary);
-}
-
-/* Animations */
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.animate-slide-up {
-  animation: slideUp 0.4s ease-out;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
-
-.animate-pulse {
-  animation: pulse 2s infinite;
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-/* Safe Area */
-.safe-area-top {
-  padding-top: env(safe-area-inset-top);
-}
-
-.safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
-}
+/* Scrollbar 隐藏 */
+::-webkit-scrollbar { width: 0; height: 0; }

@@ -1,5 +1,6 @@
-/* Import Ant Design Mobile styles */
-import 'antd-mobile/es/global/global.css'
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Base styles */
 * {
