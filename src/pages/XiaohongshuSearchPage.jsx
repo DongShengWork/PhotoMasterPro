@@ -1,154 +1,188 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { NavBar, SearchBar, List, Empty, Toast } from 'antd-mobile'
+import { LeftOutline, SearchOutline, FireFill, TagOutline } from 'antd-mobile-icons'
 
-// 小红书教程搜索页
+// 模拟小红书教程数据
+const MOCK_TUTORIALS = [
+  { id: 1, title: '手机拍照技巧大全，新手也能拍出大片感', author: '摄影小达人', likes: '12.5万', image: '📸', tags: ['新手必看', '构图技巧'] },
+  { id: 2, title: 'iPhone相机隐藏功能，90%的人都不知道', author: '数码研究所', likes: '8.3万', image: '📱', tags: ['iPhone技巧', '相机设置'] },
+  { id: 3, title: '夜景拍摄参数设置，告别噪点模糊', author: '夜景摄影师', likes: '6.7万', image: '🌃', tags: ['夜景', '参数设置'] },
+  { id: 4, title: '人像模式使用指南，拍出单反效果', author: '人像摄影', likes: '15.2万', image: '👤', tags: ['人像', '虚化'] },
+  { id: 5, title: '美食摄影构图技巧，让食物更有食欲', author: '美食摄影师', likes: '9.1万', image: '🍜', tags: ['美食', '构图'] },
+]
+
+const HOT_KEYWORDS = ['构图技巧', '夜景拍摄', '人像模式', '美食摄影', '风景大片', '参数设置']
+
 export default function XiaohongshuSearchPage({ mode, onBack }) {
-  const [searchResults, setSearchResults] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [searched, setSearched] = useState(false)
+  const [search, setSearch] = useState(mode?.searchKeywords || '')
+  const [hasSearched, setHasSearched] = useState(false)
+  const [results, setResults] = useState([])
 
-  const handleSearch = () => {
-    setIsLoading(true)
-    setSearched(true)
-    // 模拟搜索结果（实际项目中接入小红书API）
-    setTimeout(() => {
-      setSearchResults(SIMULATED_RESULTS)
-      setIsLoading(false)
-    }, 1500)
+  const handleSearch = (value) => {
+    if (!value.trim()) {
+      Toast.show({ content: '请输入搜索关键词', duration: 1500 })
+      return
+    }
+    setSearch(value)
+    setHasSearched(true)
+    // 模拟搜索结果
+    setResults(MOCK_TUTORIALS.filter(t => 
+      t.title.includes(value) || t.tags.some(tag => tag.includes(value))
+    ))
+  }
+
+  const handleKeywordClick = (keyword) => {
+    setSearch(keyword)
+    handleSearch(keyword)
   }
 
   return (
-    <div className="min-h-screen pb-8">
-      <div className="px-5 pt-14">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1 text-gray-400 text-sm mb-4 active:opacity-70"
-        >
-          <span>←</span> 返回
-        </button>
-        <h1 className="text-2xl font-bold text-white mb-1">📕 小红书教程</h1>
-        <p className="text-sm text-gray-400 mb-5">
-          搜索「{mode.searchKeywords}」相关内容
-        </p>
+    <div className="min-h-screen bg-black">
+      {/* 导航栏 */}
+      <NavBar
+        onBack={onBack}
+        backArrow={<LeftOutline fontSize={24} />}
+        style={{ 
+          background: 'rgba(0, 0, 0, 0.8)', 
+          backdropFilter: 'blur(20px)',
+          borderBottom: '0.5px solid #38383A'
+        }}
+      >
+        <span className="text-white font-semibold">小红书教程</span>
+      </NavBar>
 
-        {/* 搜索框 */}
-        <button
-          onClick={handleSearch}
-          disabled={isLoading}
-          className="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white font-semibold rounded-2xl py-3.5 text-sm mb-5 flex items-center justify-center gap-2 active:opacity-90 disabled:opacity-70"
-        >
-          {isLoading ? (
-            <>
-              <span className="animate-spin">⏳</span>
-              搜索中...
-            </>
-          ) : (
-            <>
-              <span>🔍</span>
-              搜索小红书教程
-            </>
-          )}
-        </button>
+      {/* 搜索框 */}
+      <div className="px-4 py-3">
+        <SearchBar
+          placeholder={`搜索「${mode?.searchKeywords || '拍照教程'}」`}
+          value={search}
+          onChange={setSearch}
+          onSearch={handleSearch}
+          style={{ 
+            '--background': '#1C1C1E', 
+            '--border-radius': '10px',
+            '--color': '#FFFFFF'
+          }}
+        />
+      </div>
 
-        {/* 搜索提示 */}
-        {!searched && (
-          <div className="text-center py-12">
-            <div className="text-5xl mb-4">📕</div>
-            <p className="text-sm text-gray-400">点击上方按钮搜索</p>
-            <p className="text-xs text-gray-500 mt-1">{mode.searchKeywords}</p>
-          </div>
-        )}
-
-        {/* 加载中 */}
-        {isLoading && (
-          <div className="text-center py-12">
-            <div className="text-4xl animate-pulse mb-4">📕</div>
-            <p className="text-sm text-gray-400">正在搜索...</p>
-          </div>
-        )}
-
-        {/* 搜索结果 */}
-        {!isLoading && searched && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-gray-300">搜索结果</h2>
-              <span className="text-xs text-gray-500">{searchResults.length} 条</span>
-            </div>
-            <div className="space-y-3">
-              {searchResults.map((result, idx) => (
-                <div key={idx} className="bg-darkCard rounded-2xl overflow-hidden border border-gray-800">
-                  {result.image && (
-                    <img src={result.image} alt={result.title} className="w-full h-40 object-cover" />
-                  )}
-                  <div className="p-4">
-                    <h3 className="text-sm font-semibold text-white mb-2 leading-snug">{result.title}</h3>
-                    <p className="text-xs text-gray-400 mb-3 line-clamp-2">{result.description}</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">❤️ {result.likes}</span>
-                        <span className="text-xs text-gray-500">💬 {result.comments}</span>
-                      </div>
-                      <a
-                        href={result.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-accent flex items-center gap-1"
-                      >
-                        查看 →
-                      </a>
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {result.tags.map(tag => (
-                        <span key={tag} className="text-xs px-2 py-0.5 bg-dark rounded-full text-gray-500">#{tag}</span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* 提示说明 */}
-            <div className="mt-6 p-4 bg-darkCard rounded-2xl border border-gray-800">
-              <div className="text-xs text-gray-400 leading-relaxed">
-                <p className="mb-2">💡 <strong className="text-gray-300">使用说明：</strong></p>
-                <p className="text-xs text-gray-500">• 上述为模拟数据，实际使用时将接入小红书开放API获取真实内容</p>
-                <p className="text-xs text-gray-500">• 点击「查看」将跳转到小红书App或网页</p>
-                <p className="text-xs text-gray-500">• 建议在App内搜索关键词获得最佳体验</p>
+      {/* 搜索结果或推荐 */}
+      <div className="px-4">
+        {!hasSearched ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {/* 热门搜索 */}
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <FireFill color="#FF3B30" />
+                <span className="text-white font-semibold text-sm">热门搜索</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {HOT_KEYWORDS.map((keyword, index) => (
+                  <motion.button
+                    key={keyword}
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleKeywordClick(keyword)}
+                    className="ios-tag ios-tag-blue"
+                  >
+                    {keyword}
+                  </motion.button>
+                ))}
               </div>
             </div>
-          </div>
+
+            {/* 推荐教程 */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <TagOutline color="#30D158" />
+                <span className="text-white font-semibold text-sm">推荐教程</span>
+              </div>
+              <div className="space-y-3">
+                {MOCK_TUTORIALS.slice(0, 3).map((tutorial, index) => (
+                  <motion.div
+                    key={tutorial.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 + index * 0.1 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="ios-card"
+                    style={{ margin: 0 }}
+                  >
+                    <div className="ios-card-content flex gap-3">
+                      <div className="w-20 h-20 rounded-xl flex items-center justify-center text-3xl" style={{ background: 'rgba(60, 60, 60, 0.5)' }}>
+                        {tutorial.image}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-white font-medium text-sm mb-1 line-clamp-2">{tutorial.title}</h3>
+                        <p className="text-gray-500 text-xs mb-2">{tutorial.author}</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-red-400 text-xs">❤️ {tutorial.likes}</span>
+                          {tutorial.tags.slice(0, 1).map(tag => (
+                            <span key={tag} className="ios-tag ios-tag-blue text-xs py-0.5 px-2">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            {results.length > 0 ? (
+              <div className="space-y-3">
+                <p className="text-gray-400 text-sm mb-3">找到 {results.length} 个相关教程</p>
+                {results.map((tutorial, index) => (
+                  <motion.div
+                    key={tutorial.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="ios-card"
+                    style={{ margin: 0 }}
+                  >
+                    <div className="ios-card-content flex gap-3">
+                      <div className="w-20 h-20 rounded-xl flex items-center justify-center text-3xl" style={{ background: 'rgba(60, 60, 60, 0.5)' }}>
+                        {tutorial.image}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-white font-medium text-sm mb-1 line-clamp-2">{tutorial.title}</h3>
+                        <p className="text-gray-500 text-xs mb-2">{tutorial.author}</p>
+                        <div className="flex flex-wrap gap-1">
+                          <span className="text-red-400 text-xs">❤️ {tutorial.likes}</span>
+                          {tutorial.tags.map(tag => (
+                            <span key={tag} className="ios-tag ios-tag-blue text-xs py-0.5 px-2">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <Empty
+                image={<div className="text-5xl">🔍</div>}
+                description="没有找到相关教程"
+              />
+            )}
+          </motion.div>
         )}
       </div>
     </div>
   )
 }
-
-// 模拟搜索结果（实际项目中替换为真实API数据）
-const SIMULATED_RESULTS = [
-  {
-    title: '手机拍星空教程｜保姆级教程，新手也能拍出银河🌌',
-    description: '很多小伙伴问我手机怎么拍星空，今天分享一下用华为/iPhone拍银河的完整教程，包括参数设置、APP推荐和后期调色。',
-    image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&q=80',
-    url: 'https://www.xiaohongshu.com/search_result?keyword=手机拍星空教程',
-    likes: '2.3万',
-    comments: '1847',
-    tags: ['星空摄影', '手机拍照', '教程']
-  },
-  {
-    title: '手机逆光拍照技巧｜这样拍光斑绝了✨',
-    description: '逆光拍照总是黑脸？今天教你3个技巧，轻松拍出氛围感逆光照，还有详细参数设置。',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80',
-    url: 'https://www.xiaohongshu.com/search_result?keyword=手机逆光拍照教程',
-    likes: '1.8万',
-    comments: '956',
-    tags: ['逆光摄影', '拍照技巧', '手机摄影']
-  },
-  {
-    title: 'iPhone人像模式保姆教程｜虚化效果拉满🍎',
-    description: 'iPhone人像模式怎么用？分享我常用的设置和拍摄技巧，让你的照片更有质感。',
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&q=80',
-    url: 'https://www.xiaohongshu.com/search_result?keyword=手机人像模式教程',
-    likes: '3.1万',
-    comments: '2156',
-    tags: ['人像模式', 'iPhone摄影', '虚化']
-  }
-]

@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { PHOTOGRAPHY_MODES } from '../data/photographyModes'
-import { useFavorites } from '../hooks/useFavorites'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Toast, Modal } from 'antd-mobile'
+import { CloseOutline, SwitchOutline, ThunderboltOutline, SettingOutline } from 'antd-mobile-icons'
 
-// 相机页：全屏摄像头 + 浮动模式选择条（支持切换当前模式）
 export default function CameraPage({ onModeSelect }) {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
@@ -54,174 +55,211 @@ export default function CameraPage({ onModeSelect }) {
     const ctx = canvas.getContext('2d')
     ctx.drawImage(video, 0, 0)
     setShowCapture(true)
-    setTimeout(() => setShowCapture(false), 600)
+    setTimeout(() => setShowCapture(false), 400)
+    Toast.show({
+      icon: 'success',
+      content: '已保存到相册',
+      duration: 1500,
+    })
   }
 
   if (permDenied) {
     return (
-      <div className="h-screen bg-black flex flex-col items-center justify-center px-8">
-        <div className="text-5xl mb-4">📷</div>
-        <h2 className="text-white font-bold text-lg mb-2">需要相机权限</h2>
-        <p className="text-gray-400 text-sm text-center mb-6">
-          请在系统设置中允许 App 访问相机<br/>
-          设置 → 隐私与安全 → 相机 → PhotoMaster Pro
-        </p>
-        <button onClick={() => startCam(facing)} className="px-6 py-2.5 bg-accent text-white rounded-xl text-sm font-medium active:opacity-80">
-          重试
-        </button>
+      <div className="camera-container flex flex-col items-center justify-center px-8">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="text-center"
+        >
+          <div className="text-6xl mb-6">📷</div>
+          <h2 className="text-white font-semibold text-xl mb-3">需要相机权限</h2>
+          <p className="text-gray-400 text-sm text-center mb-8 leading-relaxed">
+            请在系统设置中允许 App 访问相机<br/>
+            设置 → 隐私与安全 → 相机
+          </p>
+          <button 
+            onClick={() => startCam(facing)} 
+            className="ios-button ios-button-primary ios-button-large"
+          >
+            重试
+          </button>
+        </motion.div>
       </div>
     )
   }
 
   if (!hasCam) {
     return (
-      <div className="h-screen bg-black flex flex-col items-center justify-center px-8">
-        <div className="text-5xl mb-4">📱</div>
-        <h2 className="text-white font-bold text-lg mb-2">未检测到相机</h2>
-        <p className="text-gray-400 text-sm text-center">请在真机上体验完整功能</p>
+      <div className="camera-container flex flex-col items-center justify-center px-8">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="text-center"
+        >
+          <div className="text-6xl mb-6">📱</div>
+          <h2 className="text-white font-semibold text-xl mb-3">未检测到相机</h2>
+          <p className="text-gray-400 text-sm">请在真机上体验完整功能</p>
+        </motion.div>
       </div>
     )
   }
 
   return (
-    <div className="relative h-full bg-black overflow-hidden select-none">
+    <div className="camera-container">
       {/* 摄像头预览 */}
       <video
         ref={videoRef}
         autoPlay
         playsInline
         muted
-        className={`absolute inset-0 w-full h-full object-cover ${facing === 'user' ? 'scale-x-[-1]' : ''}`}
+        className={`camera-video ${facing === 'user' ? 'mirror' : ''}`}
       />
       <canvas ref={canvasRef} className="hidden" />
 
       {/* 拍照闪白反馈 */}
-      {showCapture && (
-        <div className="absolute inset-0 bg-white z-30 animate-pulse pointer-events-none" />
-      )}
+      <AnimatePresence>
+        {showCapture && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="absolute inset-0 bg-white z-30 pointer-events-none"
+          />
+        )}
+      </AnimatePresence>
 
       {/* 顶部状态栏 */}
-      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-5 pt-14 pb-3">
-        <button
+      <div className="camera-top-bar">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
           onClick={() => setFlash(f => f === 'off' ? 'on' : f === 'on' ? 'auto' : 'off')}
-          className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white active:scale-90 transition-transform"
+          className="camera-control-btn"
         >
-          {flash === 'off' ? '⚫' : flash === 'on' ? '💡' : '🔆'}
-        </button>
+          {flash === 'off' ? <ThunderboltOutline /> : flash === 'on' ? '💡' : '🔆'}
+        </motion.button>
 
-        {/* 当前模式 → 点击打开详情 */}
-        <button
+        <motion.button
+          whileTap={{ scale: 0.95 }}
           onClick={() => onModeSelect(currentMode)}
-          className="px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md text-white text-sm font-medium flex items-center gap-1.5 active:scale-95 transition-transform"
+          className="camera-mode-chip"
         >
-          <span>{currentMode.icon}</span>
+          <span className="text-lg">{currentMode.icon}</span>
           <span>{currentMode.name}</span>
-          <span>→</span>
-        </button>
+          <span>›</span>
+        </motion.button>
 
-        <button
+        <motion.button
+          whileTap={{ scale: 0.9 }}
           onClick={toggleFacing}
-          className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white text-lg active:scale-90 transition-transform"
+          className="camera-control-btn"
         >
-          🔄
-        </button>
+          <SwitchOutline />
+        </motion.button>
       </div>
 
       {/* 参数展开层 */}
-      {showParams && (
-        <div className="absolute top-28 left-4 right-4 z-20 bg-black/80 backdrop-blur-lg rounded-2xl p-4 border border-white/10">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">{currentMode.icon}</span>
-              <div>
-                <div className="text-white font-bold text-sm">{currentMode.name}</div>
-                <div className="text-gray-400 text-xs">{currentMode.nameEn}</div>
+      <AnimatePresence>
+        {showParams && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="absolute top-24 left-4 right-4 z-20"
+          >
+            <div className="ios-card">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">{currentMode.icon}</span>
+                  <div>
+                    <div className="text-white font-semibold text-base">{currentMode.name}</div>
+                    <div className="text-gray-400 text-xs">{currentMode.nameEn}</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => onModeSelect(currentMode)}
+                  className="ios-button ios-button-primary text-sm py-2 px-4"
+                >
+                  查看详情
+                </button>
               </div>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                {[['ISO', currentMode.params.iso], ['快门', currentMode.params.shutter], ['光圈', currentMode.params.aperture], ['白平衡', currentMode.params.wb]].map(([k, v]) => (
+                  <div key={k} className="bg-black/20 rounded-xl px-4 py-3">
+                    <div className="text-xs text-gray-400 mb-1">{k}</div>
+                    <div className="text-white font-semibold text-sm">{v}</div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-gray-300 leading-relaxed">{currentMode.params.tips}</p>
             </div>
-            <button
-              onClick={() => onModeSelect(currentMode)}
-              className="px-3 py-1 bg-accent rounded-lg text-xs text-white font-medium"
-            >
-              查看详情
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-2 mb-3">
-            {[['ISO', currentMode.params.iso], ['快门', currentMode.params.shutter], ['光圈', currentMode.params.aperture], ['白平衡', currentMode.params.wb]].map(([k, v]) => (
-              <div key={k} className="bg-white/5 rounded-xl px-3 py-2">
-                <div className="text-xs text-gray-400">{k}</div>
-                <div className="text-white font-bold text-sm">{v}</div>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-gray-300 leading-relaxed">{currentMode.params.tips}</p>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* 底部区域 */}
-      <div className="absolute bottom-0 left-0 right-0 z-20">
+      <div className="camera-bottom-bar">
         {/* 浮动模式选择条 */}
-        <div className="px-4 pb-3">
-          <div className="flex gap-2 overflow-x-auto no-scrollbar">
-            {PHOTOGRAPHY_MODES.map(m => (
-              <button
-                key={m.id}
-                onClick={() => {
-                  setCurrentMode(m)
-                  setShowParams(false)
-                }}
-                className={`flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 ${
-                  m.id === currentMode.id
-                    ? 'bg-accent text-white'
-                    : 'bg-black/50 backdrop-blur-md text-white/80 border border-white/10'
-                }`}
-              >
-                <span className="text-base">{m.icon}</span>
-                <span className="whitespace-nowrap">{m.name}</span>
-              </button>
-            ))}
-          </div>
+        <div className="camera-mode-scroll">
+          {PHOTOGRAPHY_MODES.map((m, index) => (
+            <motion.button
+              key={m.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.03 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                setCurrentMode(m)
+                setShowParams(false)
+              }}
+              className={`camera-mode-item ${m.id === currentMode.id ? 'active' : ''}`}
+            >
+              <span className="mr-1">{m.icon}</span>
+              {m.name}
+            </motion.button>
+          ))}
         </div>
 
         {/* 快门按钮 */}
-        <div className="flex items-center justify-center pb-12">
-          <button
-            onTouchStart={() => setShowManual(true)}
+        <div className="camera-shutter-container">
+          <motion.button
+            whileTap={{ scale: 0.92 }}
             onClick={takePhoto}
-            className="w-20 h-20 rounded-full bg-white border-4 border-white/30 flex items-center justify-center active:scale-90 transition-all shadow-2xl"
-          >
-            <div className="w-14 h-14 rounded-full bg-white" />
-          </button>
+            onLongPress={() => setShowManual(true)}
+            className="camera-shutter"
+          />
         </div>
       </div>
 
       {/* 手动参数调节 */}
-      {showManual && (
-        <div
-          className="absolute inset-0 z-30 bg-black/85 backdrop-blur-sm flex flex-col justify-end pb-28 px-5"
-          onClick={() => setShowManual(false)}
-        >
-          <div className="bg-darkCard rounded-t-3xl p-5 border border-gray-800" onClick={e => e.stopPropagation()}>
-            <div className="text-center text-white font-bold text-sm mb-4">📐 手动参数调节</div>
+      <Modal
+        visible={showManual}
+        onClose={() => setShowManual(false)}
+        content={
+          <div className="p-4">
+            <div className="text-center text-white font-semibold text-base mb-6">手动参数调节</div>
             {[
               { label: 'ISO', key: 'iso', min: 50, max: 3200, step: 50 },
               { label: '快门', key: 'shutter', options: ['1/4000','1/2000','1/1000','1/500','1/250','1/125','1/60','1/30','1/15','1/8','1/4','1/2','1"','2"','4"','8"','15"','30"'] },
               { label: '白平衡', key: 'wb', min: 2500, max: 10000, step: 100 },
             ].map(item => (
-              <div key={item.key} className="mb-4">
-                <div className="flex justify-between text-xs text-gray-400 mb-1.5">
+              <div key={item.key} className="mb-5">
+                <div className="flex justify-between text-sm text-gray-400 mb-2">
                   <span>{item.label}</span>
-                  <span className="text-accent font-bold">
+                  <span className="text-blue-400 font-semibold">
                     {item.options ? manualParams.shutter : manualParams[item.key]}
                   </span>
                 </div>
                 {item.options ? (
-                  <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1">
+                  <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                     {item.options.map(opt => (
                       <button
                         key={opt}
                         onClick={() => setManualParams(p => ({ ...p, [item.key]: opt }))}
-                        className={`flex-shrink-0 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                          manualParams.shutter === opt ? 'bg-accent text-white' : 'bg-dark border border-gray-700 text-gray-300'
+                        className={`flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                          manualParams.shutter === opt 
+                            ? 'bg-blue-500 text-white' 
+                            : 'bg-gray-800 text-gray-300'
                         }`}
                       >
                         {opt}
@@ -229,20 +267,27 @@ export default function CameraPage({ onModeSelect }) {
                     ))}
                   </div>
                 ) : (
-                  <input type="range" min={item.min} max={item.max} step={item.step}
+                  <input 
+                    type="range" 
+                    min={item.min} 
+                    max={item.max} 
+                    step={item.step}
                     value={manualParams[item.key]}
                     onChange={e => setManualParams(p => ({ ...p, [item.key]: Number(e.target.value) }))}
-                    className="w-full accent-accent"
+                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
                   />
                 )}
               </div>
             ))}
-            <button onClick={() => setShowManual(false)} className="w-full py-2.5 bg-accent text-white rounded-xl text-sm font-medium mt-1 active:opacity-80">
+            <button 
+              onClick={() => setShowManual(false)} 
+              className="ios-button ios-button-primary ios-button-large mt-2"
+            >
               应用参数
             </button>
           </div>
-        </div>
-      )}
+        }
+      />
     </div>
   )
 }

@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { PHOTOGRAPHY_MODES } from '../data/photographyModes'
 import { useFavorites } from '../hooks/useFavorites'
+import { motion, AnimatePresence } from 'framer-motion'
+import { SearchBar, Empty, Tabs } from 'antd-mobile'
+import { HeartOutline, AppOutline, EditSOutline } from 'antd-mobile-icons'
 
-// 模式页：搜索 + 收藏/定制/仓库 三 Tab
 export default function ModesPage({ onSelectMode }) {
   const { favorites } = useFavorites()
-  const [tab, setTab] = useState('repo')    // 'favorites' | 'custom' | 'repo'
+  const [activeTab, setActiveTab] = useState('repo')
   const [search, setSearch] = useState('')
 
   const filteredRepo = search
@@ -16,110 +18,153 @@ export default function ModesPage({ onSelectMode }) {
       )
     : PHOTOGRAPHY_MODES
 
-  const tabs = [
-    { key: 'repo', label: '📦 模式仓库', count: PHOTOGRAPHY_MODES.length },
-    { key: 'favorites', label: '❤️ 我的收藏', count: favorites.length },
-    { key: 'custom', label: '🎯 定制模式', count: null },
-  ]
-
   return (
-    <div className="h-full flex flex-col bg-dark">
-      {/* 顶部 */}
-      <div className="flex-none px-5 pt-14 pb-4">
-        <h1 className="text-2xl font-bold text-white mb-3">拍照模式</h1>
-        {/* 搜索框 */}
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="搜索模式名称或标签..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full bg-darkCard rounded-2xl px-4 py-3 pl-11 text-sm text-white placeholder-gray-500 outline-none focus:ring-2 focus:ring-accent/50 border border-gray-800"
-          />
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">🔍</span>
+    <div className="h-full flex flex-col bg-black">
+      {/* 顶部导航 */}
+      <div className="ios-nav-bar">
+        <div className="ios-nav-bar-content">
+          <h1 className="ios-nav-title">拍照模式</h1>
         </div>
       </div>
 
+      {/* 搜索框 */}
+      <div className="px-4 pt-3 pb-2">
+        <SearchBar
+          placeholder="搜索模式名称或标签..."
+          value={search}
+          onChange={setSearch}
+          style={{ '--background': '#1C1C1E', '--border-radius': '10px' }}
+        />
+      </div>
+
       {/* Tab 切换 */}
-      <div className="flex-none px-5 pb-3">
-        <div className="flex bg-darkCard rounded-2xl p-1 border border-gray-800">
-          {tabs.map(t => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors flex items-center justify-center gap-1 ${
-                tab === t.key ? 'bg-accent/20 text-white' : 'text-gray-400'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
+      <div className="px-4 pb-2">
+        <div className="ios-segmented">
+          <button
+            onClick={() => setActiveTab('repo')}
+            className={`ios-segmented-item ${activeTab === 'repo' ? 'ios-segmented-item-active' : ''}`}
+          >
+            <AppOutline style={{ marginRight: 4 }} />
+            模式仓库
+          </button>
+          <button
+            onClick={() => setActiveTab('favorites')}
+            className={`ios-segmented-item ${activeTab === 'favorites' ? 'ios-segmented-item-active' : ''}`}
+          >
+            <HeartOutline style={{ marginRight: 4 }} />
+            我的收藏
+          </button>
+          <button
+            onClick={() => setActiveTab('custom')}
+            className={`ios-segmented-item ${activeTab === 'custom' ? 'ios-segmented-item-active' : ''}`}
+          >
+            <EditSOutline style={{ marginRight: 4 }} />
+            定制模式
+          </button>
         </div>
       </div>
 
       {/* 模式列表 */}
-      <div className="flex-1 overflow-y-auto px-5 pb-24">
-        {/* 模式仓库 */}
-        {tab === 'repo' && (
-          <div>
-            <div className="grid grid-cols-2 gap-3">
-              {filteredRepo.map(mode => (
-                <ModeCard key={mode.id} mode={mode} onClick={() => onSelectMode(mode)} />
+      <div className="flex-1 overflow-y-auto">
+        <AnimatePresence mode="wait">
+          {/* 模式仓库 */}
+          {activeTab === 'repo' && (
+            <motion.div
+              key="repo"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mode-grid"
+            >
+              {filteredRepo.map((mode, index) => (
+                <motion.div
+                  key={mode.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.03 }}
+                >
+                  <ModeCard mode={mode} onClick={() => onSelectMode(mode)} />
+                </motion.div>
               ))}
-            </div>
-            {filteredRepo.length === 0 && (
-              <EmptyState emoji="🔍" text="没有找到匹配的模式" sub="试试其他关键词" />
-            )}
-          </div>
-        )}
+              {filteredRepo.length === 0 && (
+                <div className="col-span-2 py-16">
+                  <Empty
+                    image={<div className="text-5xl">🔍</div>}
+                    description="没有找到匹配的模式"
+                  />
+                </div>
+              )}
+            </motion.div>
+          )}
 
-        {/* 我的收藏 */}
-        {tab === 'favorites' && (
-          <div>
-            {favorites.length === 0 ? (
-              <EmptyState emoji="❤️‍🔥" text="还没有收藏" sub="在拍照界面点模式收藏，或在仓库里点击 ❤️" />
-            ) : (
-              <div className="space-y-2.5">
-                {favorites.map(fav => {
-                  const full = PHOTOGRAPHY_MODES.find(m => m.id === fav.id)
-                  if (!full) return null
-                  return (
-                    <div key={fav.id} className="bg-darkCard rounded-2xl p-4 border border-gray-800">
-                      <div className="flex items-center justify-between">
-                        <button
-                          onClick={() => onSelectMode(full)}
-                          className="flex items-center gap-3 flex-1 text-left active:opacity-70"
-                        >
-                          <span className="text-3xl">{full.icon}</span>
-                          <div>
-                            <div className="text-sm font-semibold text-white">{full.name}</div>
-                            <div className="text-xs text-gray-500">{full.nameEn}</div>
-                          </div>
-                        </button>
-                        <div className="text-xs text-gray-600">{fav.savedAt ? new Date(fav.savedAt).toLocaleDateString('zh-CN') : ''}</div>
-                      </div>
-                    </div>
-                  )
-                })}
+          {/* 我的收藏 */}
+          {activeTab === 'favorites' && (
+            <motion.div
+              key="favorites"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="px-4 py-2"
+            >
+              {favorites.length === 0 ? (
+                <div className="py-16">
+                  <Empty
+                    image={<div className="text-5xl">❤️‍🔥</div>}
+                    description="还没有收藏"
+                  />
+                  <p className="text-center text-gray-500 text-sm mt-2">
+                    在拍照界面点模式收藏，或在仓库里点击 ❤️
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {favorites.map((fav, index) => {
+                    const full = PHOTOGRAPHY_MODES.find(m => m.id === fav.id)
+                    if (!full) return null
+                    return (
+                      <motion.div
+                        key={fav.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="ios-list-item"
+                        onClick={() => onSelectMode(full)}
+                      >
+                        <span className="text-2xl mr-3">{full.icon}</span>
+                        <div className="ios-list-content">
+                          <div className="ios-list-title">{full.name}</div>
+                          <div className="ios-list-subtitle">{full.nameEn}</div>
+                        </div>
+                        <span className="ios-list-arrow">›</span>
+                      </motion.div>
+                    )
+                  })}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* 定制模式 */}
+          {activeTab === 'custom' && (
+            <motion.div
+              key="custom"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="flex flex-col items-center justify-center py-20"
+            >
+              <div className="text-6xl mb-4">🛠️</div>
+              <h3 className="text-white font-semibold text-lg mb-2">自定义拍摄参数</h3>
+              <p className="text-sm text-gray-400 text-center px-8 mb-6">
+                保存你专属的参数预设，随用随调
+              </p>
+              <div className="ios-card p-6 text-center">
+                <div className="text-4xl mb-3">🚧</div>
+                <p className="text-sm text-gray-500">功能开发中，敬请期待</p>
               </div>
-            )}
-          </div>
-        )}
-
-        {/* 定制模式 */}
-        {tab === 'custom' && (
-          <div className="py-16">
-            <div className="text-center mb-6">
-              <div className="text-5xl mb-3">🛠️</div>
-              <h3 className="text-white font-bold text-base mb-1">自定义拍摄参数</h3>
-              <p className="text-sm text-gray-400">保存你专属的参数预设，随用随调</p>
-            </div>
-            <div className="bg-darkCard rounded-2xl p-4 border border-gray-800 text-center">
-              <div className="text-3xl mb-2">🚧</div>
-              <p className="text-xs text-gray-500">功能开发中，敬请期待</p>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )
@@ -127,24 +172,15 @@ export default function ModesPage({ onSelectMode }) {
 
 function ModeCard({ mode, onClick }) {
   return (
-    <button
+    <motion.button
+      whileTap={{ scale: 0.96 }}
       onClick={onClick}
-      className="bg-darkCard rounded-2xl p-4 text-left border border-gray-800 hover:border-accent/30 transition-colors active:scale-[0.98]"
+      className="mode-card"
     >
-      <div className="text-3xl mb-2">{mode.icon}</div>
-      <div className="font-bold text-sm text-white mb-0.5">{mode.name}</div>
-      <div className="text-xs text-gray-500 mb-2">{mode.nameEn}</div>
-      <div className="text-xs text-gray-600 leading-relaxed line-clamp-2">{mode.description}</div>
-    </button>
-  )
-}
-
-function EmptyState({ emoji, text, sub }) {
-  return (
-    <div className="text-center py-16">
-      <div className="text-5xl mb-3">{emoji}</div>
-      <p className="text-sm text-gray-400 mb-1">{text}</p>
-      <p className="text-xs text-gray-600">{sub}</p>
-    </div>
+      <div className="mode-card-icon">{mode.icon}</div>
+      <div className="mode-card-title">{mode.name}</div>
+      <div className="mode-card-subtitle">{mode.nameEn}</div>
+      <div className="mode-card-desc">{mode.description}</div>
+    </motion.button>
   )
 }
