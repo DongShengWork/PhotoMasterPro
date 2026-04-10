@@ -2,45 +2,97 @@ import { useState } from 'react'
 import { PHONE_BRANDS } from '../data/photographyModes'
 import { useFavorites } from '../hooks/useFavorites'
 import { motion } from 'framer-motion'
-import { NavBar, Toast, Tag } from 'antd-mobile'
-import { LeftOutline, HeartOutline, HeartFill } from 'antd-mobile-icons'
+import { NavBar, Toast, Tag, Modal } from 'antd-mobile'
+import { LeftOutline, HeartOutline, HeartFill, CopyOutline, ShareOutline, PictureOutline } from 'antd-mobile-icons'
 
 export default function ModeDetailPage({ mode, onBack, onSearch }) {
   const { params, name, icon, nameEn, tags, searchKeywords } = mode
   const { isFavorited, toggleFavorite } = useFavorites()
-  const [justFavorited, setJustFavorited] = useState(false)
+  const [showPhoneGuide, setShowPhoneGuide] = useState(false)
+  const [selectedBrand, setSelectedBrand] = useState(null)
   const favorited = isFavorited(mode.id)
 
   const handleFavorite = () => {
     const added = toggleFavorite(mode)
-    setJustFavorited(true)
     Toast.show({
       icon: added ? 'success' : 'fail',
       content: added ? '已添加到收藏' : '已取消收藏',
       duration: 1500,
     })
-    setTimeout(() => setJustFavorited(false), 1500)
+  }
+
+  const handleCopyParams = () => {
+    const text = `📷 ${name} 拍照参数\n\nISO: ${params.iso}\n快门: ${params.shutter}\n光圈: ${params.aperture}\n白平衡: ${params.wb}\n对焦: ${params.focus}\n\n💡 提示: ${params.tips}\n\n来自 PhotoMaster Pro`
+    
+    navigator.clipboard.writeText(text).then(() => {
+      Toast.show({
+        icon: 'success',
+        content: '参数已复制到剪贴板',
+        duration: 1500,
+      })
+    }).catch(() => {
+      Toast.show({
+        content: '复制失败，请手动复制',
+        duration: 1500,
+      })
+    })
+  }
+
+  const handleShare = () => {
+    const shareData = {
+      title: `PhotoMaster Pro - ${name}`,
+      text: `${name}拍照参数：ISO ${params.iso}，快门 ${params.shutter}，${params.tips}`,
+      url: window.location.href,
+    }
+
+    if (navigator.share) {
+      navigator.share(shareData).catch(() => {})
+    } else {
+      // Fallback: copy share text
+      navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}`).then(() => {
+        Toast.show({
+          icon: 'success',
+          content: '分享内容已复制',
+          duration: 1500,
+        })
+      })
+    }
+  }
+
+  const handleBrandClick = (brand) => {
+    setSelectedBrand(brand)
+    setShowPhoneGuide(true)
   }
 
   return (
-    <div className="min-h-screen bg-black pb-24">
+    <div className="min-h-screen bg-black pb-32">
       {/* 导航栏 */}
       <NavBar
         onBack={onBack}
         backArrow={<LeftOutline fontSize={24} />}
         right={
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={handleFavorite}
-            className="w-10 h-10 rounded-full flex items-center justify-center"
-            style={{ background: favorited ? 'rgba(255, 59, 48, 0.2)' : 'rgba(60, 60, 60, 0.5)' }}
-          >
-            {favorited ? (
-              <HeartFill fontSize={20} color="#FF3B30" />
-            ) : (
-              <HeartOutline fontSize={20} color="#8E8E93" />
-            )}
-          </motion.button>
+          <div className="flex gap-2">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleShare}
+              className="w-10 h-10 rounded-full flex items-center justify-center"
+              style={{ background: 'rgba(60, 60, 60, 0.5)' }}
+            >
+              <ShareOutline fontSize={18} color="#0A84FF" />
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleFavorite}
+              className="w-10 h-10 rounded-full flex items-center justify-center"
+              style={{ background: favorited ? 'rgba(255, 59, 48, 0.2)' : 'rgba(60, 60, 60, 0.5)' }}
+            >
+              {favorited ? (
+                <HeartFill fontSize={18} color="#FF3B30" />
+              ) : (
+                <HeartOutline fontSize={18} color="#8E8E93" />
+              )}
+            </motion.button>
+          </div>
         }
         style={{ 
           background: 'rgba(0, 0, 0, 0.8)', 
@@ -52,12 +104,13 @@ export default function ModeDetailPage({ mode, onBack, onSearch }) {
       </NavBar>
 
       {/* 头部信息 */}
-      <div className="detail-header">
+      <div className="px-4 pt-6 pb-4">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 200 }}
-          className="detail-icon"
+          className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4"
+          style={{ background: 'linear-gradient(135deg, #1C1C1E 0%, #2C2C2E 100%)' }}
         >
           {icon}
         </motion.div>
@@ -65,7 +118,7 @@ export default function ModeDetailPage({ mode, onBack, onSearch }) {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="detail-title"
+          className="text-2xl font-bold text-white text-center mb-1"
         >
           {name}
         </motion.h1>
@@ -73,19 +126,19 @@ export default function ModeDetailPage({ mode, onBack, onSearch }) {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.15 }}
-          className="detail-subtitle"
+          className="text-sm text-gray-400 text-center"
         >
           {nameEn}
         </motion.p>
       </div>
 
-      <div className="px-4">
+      <div className="px-4 space-y-4">
         {/* 提示语 */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="ios-card mb-4"
+          className="ios-card"
           style={{ background: 'rgba(10, 132, 255, 0.1)', border: '1px solid rgba(10, 132, 255, 0.2)' }}
         >
           <div className="ios-card-content">
@@ -102,14 +155,25 @@ export default function ModeDetailPage({ mode, onBack, onSearch }) {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.25 }}
         >
-          <h2 className="text-sm font-semibold text-gray-300 mb-3 px-1">📷 推荐相机参数</h2>
-          <div className="ios-card mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-gray-300">📷 推荐相机参数</h2>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={handleCopyParams}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium"
+              style={{ background: 'rgba(10, 132, 255, 0.2)', color: '#0A84FF' }}
+            >
+              <CopyOutline fontSize={12} />
+              复制参数
+            </motion.button>
+          </div>
+          <div className="ios-card">
             <div className="ios-card-content py-2">
-              <ParamRow label="ISO" value={params.iso} sub="感光度" />
-              <ParamRow label="快门" value={params.shutter} sub="速度" />
-              <ParamRow label="光圈" value={params.aperture} sub="虚化程度" />
-              <ParamRow label="白平衡" value={params.wb} sub="色温" />
-              <ParamRow label="对焦" value={params.focus} sub="对焦点" />
+              <ParamRow label="ISO" value={params.iso} sub="感光度" color="#FF9500" />
+              <ParamRow label="快门" value={params.shutter} sub="速度" color="#30D158" />
+              <ParamRow label="光圈" value={params.aperture} sub="虚化程度" color="#0A84FF" />
+              <ParamRow label="白平衡" value={params.wb} sub="色温" color="#FF3B30" />
+              <ParamRow label="对焦" value={params.focus} sub="对焦点" color="#BF5AF2" />
             </div>
           </div>
         </motion.div>
@@ -120,25 +184,25 @@ export default function ModeDetailPage({ mode, onBack, onSearch }) {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <h2 className="text-sm font-semibold text-gray-300 mb-3 px-1">📱 支持的手机品牌</h2>
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          <h2 className="text-sm font-semibold text-gray-300 mb-3">📱 支持的手机品牌</h2>
+          <p className="text-xs text-gray-500 mb-3">点击品牌查看专业模式开启方法</p>
+          <div className="grid grid-cols-4 gap-3">
             {PHONE_BRANDS.map((brand, index) => (
-              <motion.div
+              <motion.button
                 key={brand.id}
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.35 + index * 0.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleBrandClick(brand)}
                 className="ios-card"
-                style={{ margin: 0 }}
+                style={{ margin: 0, padding: 0 }}
               >
-                <div className="ios-card-content text-center py-4">
+                <div className="ios-card-content text-center py-4 px-2">
                   <div className="text-2xl mb-2">{brand.logo}</div>
-                  <div className="text-xs text-gray-300">{brand.nameZh}</div>
-                  {brand.models[0]?.hasProMode && (
-                    <div className="ios-tag ios-tag-green mt-2 text-xs">专业模式</div>
-                  )}
+                  <div className="text-xs text-gray-300 truncate">{brand.nameZh}</div>
                 </div>
-              </motion.div>
+              </motion.button>
             ))}
           </div>
         </motion.div>
@@ -149,7 +213,7 @@ export default function ModeDetailPage({ mode, onBack, onSearch }) {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <h2 className="text-sm font-semibold text-gray-300 mb-3 px-1">📕 小红书教程</h2>
+          <h2 className="text-sm font-semibold text-gray-300 mb-3">📕 小红书教程</h2>
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={onSearch}
@@ -179,7 +243,7 @@ export default function ModeDetailPage({ mode, onBack, onSearch }) {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.45 }}
-          className="flex flex-wrap gap-2 mt-4 px-1"
+          className="flex flex-wrap gap-2"
         >
           {tags.map((tag, index) => (
             <motion.span
@@ -214,18 +278,66 @@ export default function ModeDetailPage({ mode, onBack, onSearch }) {
           🔍 搜索小红书教程
         </motion.button>
       </motion.div>
+
+      {/* 手机品牌指南弹窗 */}
+      <Modal
+        visible={showPhoneGuide}
+        onClose={() => setShowPhoneGuide(false)}
+        content={
+          selectedBrand && (
+            <div className="p-4">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">{selectedBrand.logo}</span>
+                <div>
+                  <h3 className="text-lg font-bold text-white">{selectedBrand.nameZh}</h3>
+                  <p className="text-sm text-gray-400">{selectedBrand.name}</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="ios-card" style={{ margin: 0 }}>
+                  <div className="ios-card-content">
+                    <div className="text-blue-400 font-medium text-sm mb-2">📷 专业模式</div>
+                    <p className="text-sm text-gray-300 leading-relaxed">{selectedBrand.howToProMode}</p>
+                  </div>
+                </div>
+                
+                <div className="ios-card" style={{ margin: 0 }}>
+                  <div className="ios-card-content">
+                    <div className="text-green-400 font-medium text-sm mb-2">🌙 夜景模式</div>
+                    <p className="text-sm text-gray-300 leading-relaxed">{selectedBrand.howToNightMode}</p>
+                  </div>
+                </div>
+
+                {selectedBrand.xiaohongshuRef && (
+                  <div className="text-center pt-2">
+                    <p className="text-xs text-gray-500">小红书参考：{selectedBrand.xiaohongshuRef}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        }
+        closeOnMaskClick
+      />
     </div>
   )
 }
 
-function ParamRow({ label, value, sub }) {
+function ParamRow({ label, value, sub, color }) {
   return (
     <div className="param-row">
-      <div>
-        <div className="text-xs text-gray-500 mb-0.5">{sub}</div>
-        <div className="text-sm text-gray-300">{label}</div>
+      <div className="flex items-center gap-2">
+        <div 
+          className="w-2 h-2 rounded-full" 
+          style={{ background: color }}
+        />
+        <div>
+          <div className="text-xs text-gray-500 mb-0.5">{sub}</div>
+          <div className="text-sm text-gray-300">{label}</div>
+        </div>
       </div>
-      <div className="param-value">{value}</div>
+      <div className="param-value" style={{ color }}>{value}</div>
     </div>
   )
 }
