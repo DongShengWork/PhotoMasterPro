@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0D0D0D;
+  color: #FFFFFF;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 隐藏滚动条但保留功能 */
+::-webkit-scrollbar { width: 0; height: 0; }
+
+/* 卡片点击涟漪效果 */
+.card-touch {
+  @apply transition-all duration-150 active:scale-95;
+}
