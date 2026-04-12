@@ -64,17 +64,18 @@ jobs:
         working-directory: ./android
         run: |
           cat local.properties
-          ./gradlew assembleDebug --stacktrace 2>&1 | tail -100
+          ./gradlew assembleDebug --info 2>&1 | grep -E "(BUILD|APK|Error|error|FAILURE)"
 
       - name: Verify APK exists
         run: |
           echo "=== Checking APK ==="
-          ls -la ./android/app/build/outputs/apk/debug/
-          file ./android/app/build/outputs/apk/debug/app-debug.apk
+          ls -la android/app/build/outputs/apk/debug/ 2>&1 || echo "APK dir not found"
+          find android -name "*.apk" 2>/dev/null || echo "No APK found"
 
       - name: Upload APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: ./android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 7
