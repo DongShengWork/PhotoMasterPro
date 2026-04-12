@@ -47,8 +47,9 @@ jobs:
 
       - name: Copy web assets to Android
         run: |
-          rm -rf android/app/src/main/assets/public
-          cp -r dist android/app/src/main/assets/public
+          mkdir -p android/app/src/main/assets/public
+          rm -rf android/app/src/main/assets/public/*
+          cp -r dist/. android/app/src/main/assets/public/
           echo "=== Web assets copied ==="
           ls -la android/app/src/main/assets/public/ | head -10
 

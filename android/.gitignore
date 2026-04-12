@@ -96,6 +96,7 @@ capacitor-cordova-android-plugins/src/main/java/*
 
 # Copied web assets
 app/src/main/assets/public
+!app/src/main/assets/.gitkeep
 
 # Generated Config files
 app/src/main/assets/capacitor.config.json
