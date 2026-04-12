@@ -45,23 +45,12 @@ jobs:
       - name: Build web assets
         run: npm run build
 
-      - name: Debug environment
+      - name: Copy web assets to Android
         run: |
-          echo "=== Node version ==="
-          node --version
-          echo "=== NPM version ==="
-          npm --version
-          echo "=== Capacitor CLI version ==="
-          npx cap --version 2>&1 || echo "cap CLI not found via npx"
-          echo "=== Checking node_modules bin ==="
-          ls -la node_modules/.bin/cap 2>&1 || echo "cap binary not in node_modules/.bin"
-          echo "=== android directory ==="
-          ls -la android/ 2>&1 || echo "no android directory"
-          echo "=== package.json scripts ==="
-          cat package.json | grep -A5 '"scripts"'
-
-      - name: Sync Capacitor Android
-        run: npx cap sync android
+          rm -rf android/app/src/main/assets/public
+          cp -r dist android/app/src/main/assets/public
+          echo "=== Web assets copied ==="
+          ls -la android/app/src/main/assets/public/ | head -10
 
       - name: Build Debug APK
         working-directory: ./android
