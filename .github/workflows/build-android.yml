@@ -64,7 +64,11 @@ jobs:
         working-directory: ./android
         run: |
           cat local.properties
-          ./gradlew assembleDebug --info 2>&1 | grep -E "(BUILD|APK|Error|error|FAILURE)"
+          ./gradlew assembleDebug 2>&1
+          echo "=== Build outputs ==="
+          ls -la app/build/outputs/ 2>&1 || echo "No outputs dir"
+          ls -la app/build/outputs/apk/ 2>&1 || echo "No apk dir"
+          find app/build -name "*.apk" 2>/dev/null || echo "No APK found"
 
       - name: Verify APK exists
         run: |
