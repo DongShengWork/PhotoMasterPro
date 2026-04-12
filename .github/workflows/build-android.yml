@@ -66,6 +66,12 @@ jobs:
           cat local.properties
           ./gradlew assembleDebug --stacktrace 2>&1 | tail -100
 
+      - name: Verify APK exists
+        run: |
+          echo "=== Checking APK ==="
+          ls -la ./android/app/build/outputs/apk/debug/
+          file ./android/app/build/outputs/apk/debug/app-debug.apk
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
