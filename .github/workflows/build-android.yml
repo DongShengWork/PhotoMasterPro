@@ -40,18 +40,22 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Install dependencies
-        run: |
-          npm ci
-          ls -la node_modules/@capacitor/cli/
+        run: npm ci
 
       - name: Build web assets
         run: npm run build
 
       - name: Sync Capacitor Android
         run: |
-          ls -la android/
-          ls -la android/app/src/main/
-          ./node_modules/.bin/cap sync android 2>&1 || (echo "Cap sync failed with exit code $?" && exit 1)
+          set -x
+          echo "=== Checking android directory ==="
+          ls -la android/ || echo "android dir not found"
+          echo "=== Checking android/app directory ==="
+          ls -la android/app/ || echo "android/app dir not found"
+          echo "=== Checking android/app/src/main ==="
+          ls -la android/app/src/main/ || echo "android/app/src/main dir not found"
+          echo "=== Running cap sync ==="
+          npx cap sync android
 
       - name: Build Debug APK
         working-directory: ./android
