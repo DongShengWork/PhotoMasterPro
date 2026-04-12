@@ -61,7 +61,16 @@ jobs:
           ls -la android/app/src/main/assets/public/ | head -10
 
       - name: Sync Capacitor Android
-        run: npx cap sync android --verbose 2>&1
+        run: |
+          echo "=== Environment ==="
+          node --version
+          npm --version
+          echo "=== Checking @capacitor packages ==="
+          ls -la node_modules/@capacitor/
+          echo "=== Checking @capacitor/android ==="
+          ls -la node_modules/@capacitor/android/
+          echo "=== Running cap sync ==="
+          npx cap sync android 2>&1 || echo "Cap sync failed with code $?"
 
       - name: Build Debug APK
         working-directory: ./android
