@@ -13,18 +13,32 @@ export default function CameraPage({ onModeSelect, onBack }) {
   const [showParams, setShowParams] = useState(false)
   const videoRef = useRef(null)
   const streamRef = useRef(null)
+  const initDone = useRef(false)
+
+  // 判断是否支持摄像头 API（扩展/特殊环境可能不支持）
+  const supportsCameraApi = typeof navigator !== 'undefined' &&
+    navigator.mediaDevices && navigator.mediaDevices.getUserMedia
 
   useEffect(() => {
+    // 不支持 API 的环境 → 直接显示模拟相机
+    if (!supportsCameraApi) {
+      setHasCamera(false)
+      setCameraError('NOT_SUPPORTED')
+      return
+    }
+    // 已初始化过且未切换摄像头 → 跳过
+    if (initDone.current && cameraFacing === 'environment') {
+      return
+    }
+    initDone.current = true
     initCamera()
     return () => stopCamera()
-  }, [cameraFacing])
+  }, []) // eslint-disable-line
 
   const initCamera = useCallback(async () => {
+    if (!supportsCameraApi) return
     stopCamera()
     try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('NOT_SUPPORTED')
-      }
       const constraints = {
         video: {
           facingMode: cameraFacing,
@@ -46,10 +60,9 @@ export default function CameraPage({ onModeSelect, onBack }) {
       setHasCamera(false)
       if (err.name === 'NotAllowedError') setCameraError('NOT_ALLOWED')
       else if (err.name === 'NotFoundError') setCameraError('NOT_FOUND')
-      else if (err.message === 'NOT_SUPPORTED') setCameraError('NOT_SUPPORTED')
       else setCameraError('ERROR')
     }
-  }, [cameraFacing])
+  }, [cameraFacing, supportsCameraApi])
 
   const stopCamera = () => {
     if (streamRef.current) {
