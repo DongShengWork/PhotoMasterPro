@@ -89,8 +89,10 @@ jobs:
       - name: Verify APK exists
         run: |
           echo "=== Checking APK ==="
-          ls -la android/app/build/outputs/apk/debug/ 2>&1 || echo "APK dir not found"
-          find . -name "*.apk" 2>/dev/null || echo "No APK found"
+          APK_PATH=$(find . -name "*.apk" -type f 2>/dev/null | head -1)
+          echo "APK found: $APK_PATH"
+          ls -la "$APK_PATH" 2>/dev/null || echo "APK not found"
+          echo "APK_PATH=$APK_PATH" >> $GITHUB_ENV
 
       - name: Upload Gradle Log
         if: failure()
@@ -101,8 +103,11 @@ jobs:
           retention-days: 7
 
       - name: Upload APK
+        run: |
+          echo "=== Uploading APK ==="
+          ls -la "$APK_PATH"
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: ./android/app/build/outputs/apk/debug/app-debug.apk
+          path: ${{ env.APK_PATH }}
           retention-days: 7
