@@ -76,10 +76,14 @@ jobs:
         working-directory: ./android
         run: |
           cat local.properties
-          ./gradlew assembleDebug 2>&1
+          echo "=== Checking android directory ==="
+          ls -la
+          echo "=== Checking capacitor-android ==="
+          ls -la capacitor-android/ 2>&1 || echo "capacitor-android not found"
+          echo "=== Running gradle build ==="
+          ./gradlew assembleDebug --stacktrace 2>&1 | tee gradle.log
           echo "=== Build outputs ==="
           ls -la app/build/outputs/ 2>&1 || echo "No outputs dir"
-          ls -la app/build/outputs/apk/ 2>&1 || echo "No apk dir"
           find app/build -name "*.apk" 2>/dev/null || echo "No APK found"
 
       - name: Verify APK exists
@@ -87,6 +91,14 @@ jobs:
           echo "=== Checking APK ==="
           ls -la android/app/build/outputs/apk/debug/ 2>&1 || echo "APK dir not found"
           find . -name "*.apk" 2>/dev/null || echo "No APK found"
+
+      - name: Upload Gradle Log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-log
+          path: ./android/gradle.log
+          retention-days: 7
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
